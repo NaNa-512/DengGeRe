@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登革热普及在线客服系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        .user-message {
+            background: #e3f2fd;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background: #f1f8e9;
+            margin-right: auto;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .suggested-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .suggestion {
+            background: #e8f5e8;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            border: 1px solid #c8e6c9;
+        }
+        .suggestion:hover {
+            background: #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦟 登革热普及在线客服系统</h1>
+        <p>为您提供专业的登革热咨询和预防建议</p>
+    </div>
+
+    <div class="chat-container" id="chat-box">
+        <div class="message bot-message">
+            👋 您好！我是登革热健康顾问，我可以为您解答关于登革热的症状、预防、治疗等问题。请问有什么可以帮您的？
+        </div>
+    </div>
+
+    <div class="suggested-questions">
+        <div class="suggestion" onclick="askQuestion('什么是登革热？')">什么是登革热？</div>
+        <div class="suggestion" onclick="askQuestion('有什么症状？')">有什么症状？</div>
+        <div class="suggestion" onclick="askQuestion('如何预防？')">如何预防？</div>
+        <div class="suggestion" onclick="askQuestion('怎么治疗？')">怎么治疗？</div>
+        <div class="suggestion" onclick="askQuestion('传播途径')">传播途径</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">发送</button>
+    </div>
+
+    <script>
+        // 知识库数据
+        const knowledgeBase = {
+            "什么是登革热": "登革热是由登革病毒引起的急性传染病，主要通过伊蚊（主要是埃及伊蚊和白纹伊蚊）叮咬传播。这是一种热带和亚热带地区常见的蚊媒疾病。",
+            "症状": "典型症状包括：\n• 突发高热（39-40°C）\n• 剧烈头痛、眼眶痛\n• 肌肉和关节剧痛\n• 恶心、呕吐\n• 皮疹（发病后3-4天出现）\n• 出血表现（如鼻出血、牙龈出血）",
+            "预防": "预防措施：\n1. 🚫 清除积水容器，消灭蚊虫孳生地\n2. 🛏️ 使用蚊帐、纱窗纱门\n3. 🧴 使用驱蚊剂（含DEET、派卡瑞丁等有效成分）\n4. 👕 穿浅色长袖衣裤\n5. 🏘️ 社区定期灭蚊\n6. 🏠 安装空调或使用电蚊香",
+            "治疗": "治疗方法：\n• 目前没有特效抗病毒药物\n• 主要采用对症支持治疗：\n  - 退热（避免使用阿司匹林和布洛芬）\n  - 补液（多喝水或口服补液盐）\n  - 充分休息\n• 重症患者需要住院治疗",
+            "传播途径": "传播方式：\n• 主要通过感染病毒的雌性伊蚊叮咬传播\n• 不会直接人传人\n• 蚊虫在叮咬感染者后，经过8-12天潜伏期才能传播病毒\n• 蚊虫一生都能传播病毒",
+            "潜伏期": "潜伏期：\n• 通常为4-10天\n• 最长可达14天\n• 从被感染蚊虫叮咬到出现症状的时间",
+            "高风险地区": "高风险区域：\n• 东南亚地区\n• 西太平洋地区\n• 美洲热带地区\n• 非洲部分地区\n• 我国广东、云南、福建等南方省份",
+            "疫苗": "疫苗情况：\n• 已有登革热疫苗获批使用\n• 主要用于流行区9-45岁人群\n• 保护率约60-80%\n• 不能替代其他预防措施",
+            "并发症": "可能并发症：\n• 登革出血热（DHF）\n• 登革休克综合征（DSS）\n• 器官损伤\n• 死亡率约1-5%（如未及时治疗）",
+            "诊断": "诊断方法：\n• 血液检测：病毒分离、核酸检测\n• 血清学检测：IgM/IgG抗体检测\n• 血常规检查：血小板减少、白细胞减少",
+            "你好": "您好！我是登革热健康顾问，很高兴为您服务。",
+            "谢谢": "不客气！如果您还有其他关于登革热的问题，随时可以问我。祝您健康！",
+            "再见": "感谢咨询！请注意防蚊，保持健康。再见！"
+        };
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const question = input.value.trim();
+            
+            if (question) {
+                addMessage(question, 'user');
+                const answer = findAnswer(question);
+                // 模拟打字效果
+                setTimeout(() => {
+                    addMessage(answer, 'bot');
+                }, 500);
+                input.value = '';
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('user-input').value = question;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function findAnswer(question) {
+            const lowerQuestion = question.toLowerCase();
+            
+            // 精确匹配
+            for (const [key, value] of Object.entries(knowledgeBase)) {
+                if (lowerQuestion.includes(key.toLowerCase())) {
+                    return value;
+                }
+            }
+            
+            // 模糊匹配关键词
+            if (lowerQuestion.includes('症状') || lowerQuestion.includes('表现')) {
+                return knowledgeBase.症状;
+            } else if (lowerQuestion.includes('预防') || lowerQuestion.includes('防止')) {
+                return knowledgeBase.预防;
+            } else if (lowerQuestion.includes('治疗') || lowerQuestion.includes('医治')) {
+                return knowledgeBase.治疗;
+            } else if (lowerQuestion.includes('传播') || lowerQuestion.includes('传染')) {
+                return knowledgeBase.传播途径;
+            }
+            
+            return "抱歉，我暂时无法回答这个问题。您可以询问关于登革热的症状、预防措施、治疗方法等问题。或者联系当地疾控中心获取更专业的帮助。";
+        }
+
+        function addMessage(text, type) {
+            const chatBox = document.getElementById('chat-box');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
